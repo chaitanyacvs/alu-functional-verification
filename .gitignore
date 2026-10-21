@@ -1,0 +1,6 @@
+*.vcd
+*.fst
+simv
+simv.*
+reports/*.log
+.DS_Store
