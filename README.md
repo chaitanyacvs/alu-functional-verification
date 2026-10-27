@@ -57,6 +57,21 @@ tests/        # reserved
 ```
 
 ## Operations
+<<<<<<< HEAD
+=======
+
+- `0`: ADD
+- `1`: SUB
+- `2`: AND
+- `3`: OR
+- `4`: XOR
+- `5`: SLL
+- `6`: SRL
+- `7`: SRA
+- `8`: SLT (signed)
+- `9`: SLTU (unsigned)
+- Other opcodes return zero.
+>>>>>>> 7f20f60 (Update ALU verification documentation)
 
 | Opcode | Mnemonic | Description                          |
 |:------:|----------|--------------------------------------|
@@ -72,6 +87,7 @@ tests/        # reserved
 | `9`    | SLTU     | Set if less than (unsigned)          |
 | other  | n/a      | Returns zero                         |
 
+<<<<<<< HEAD
 > Port names, opcode width, and the shift-amount source (commonly `b[4:0]`) are not stated in the original README. Document them here after confirming against `rtl/alu.sv`.
 
 ## Flag Semantics
@@ -103,16 +119,26 @@ brew install icarus-verilog
 ```
 
 **Run manually:**
+=======
+## Run on macOS
+
+>>>>>>> 7f20f60 (Update ALU verification documentation)
 ```bash
 iverilog -g2012 -s tb_alu -o /tmp/alu_sim rtl/alu.sv tb/tb_alu.sv
 vvp /tmp/alu_sim
 ```
+<<<<<<< HEAD
+=======
+
+Or run `./scripts/run.sh`.
+>>>>>>> 7f20f60 (Update ALU verification documentation)
 
 **Or use the helper script:**
 ```bash
 ./scripts/run.sh
 ```
 
+<<<<<<< HEAD
 **Expected final line:**
 ```text
 PASS: all ALU tests passed
@@ -172,3 +198,44 @@ UVM progression: interface, then transaction/sequencer/driver/monitor, then scor
 
 ## Status
 Phase 1 is active: the RTL and self-checking testbench run under Icarus Verilog and should end with `PASS: all ALU tests passed`. `uvm/`, `assertions/`, and `tests/` are reserved for later phases.
+=======
+## Layout
+
+- `rtl/alu.sv`: ALU RTL
+- `tb/tb_alu.sv`: Icarus-compatible self-checking testbench
+- `uvm/`, `assertions/`, `tests/`: reserved for next phases
+- `scripts/run.sh`: compile and execute
+
+## Verification Results
+
+### Test environment
+
+- RTL and testbench: SystemVerilog
+- Simulator: Icarus Verilog
+- Regression command: `./scripts/run.sh`
+- Bug-injection command: `./scripts/run_bug_test.sh`
+
+### Normal regression
+
+- Transactions checked: 1,020
+- Scoreboard errors: 0
+- Valid ALU opcodes exercised: 10/10
+- Invalid opcodes exercised: 6/6
+- Result and arithmetic-flag checks included
+
+### Bug-injection test
+
+An intentional XOR implementation defect was introduced in a separate ALU variant by replacing XOR with OR. The dedicated test detected the mismatch and passed the bug-detection check.
+
+### Key verification concepts demonstrated
+
+- Reference-model-based checking
+- Self-checking testbench and scoreboard
+- Directed and randomized stimulus
+- Opcode and result/flag coverage counters
+- Bug injection and regression automation
+
+### Limitations and future work
+
+This project currently uses a procedural SystemVerilog testbench. It is not yet a class-based UVM environment and does not currently report standards-based functional coverage percentages. Future work includes SystemVerilog assertions, improved constrained-random stimulus, and a UVM environment using a compatible simulator.
+>>>>>>> 7f20f60 (Update ALU verification documentation)
