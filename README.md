@@ -1,241 +1,179 @@
-# ALU Verification Starter
+# ALU Functional Verification using SystemVerilog
 
-![Language](https://img.shields.io/badge/HDL-SystemVerilog-blue)
-![Simulator](https://img.shields.io/badge/sim-Icarus%20Verilog-green)
-![Width](https://img.shields.io/badge/datapath-32--bit-informational)
-![UVM](https://img.shields.io/badge/UVM-needs%20Questa%2FVCS%2FXcelium-orange)
+A simulation-driven RTL verification project for an Arithmetic Logic Unit (ALU), built using SystemVerilog and Icarus Verilog. The project focuses on functional correctness, self-checking testbenches, coverage tracking, bug detection, and reproducible simulation results.
 
-A starter project for a 32-bit combinational ALU, built for **VS Code + Icarus Verilog**. It includes the RTL and a self-checking testbench that runs in one command.
+## Overview
 
-> **UVM note:** Icarus Verilog does not support the full class-based UVM environment. This starter runs the RTL and a self-checking testbench first. A UVM-capable simulator (Questa, VCS, or Xcelium) is needed for the complete UVM phase.
+This repository contains an ALU RTL implementation and a verification environment designed to check its behavior across supported operations, arithmetic corner cases, status flags, and invalid opcodes.
 
----
+The testbench compares the DUT output against expected behavior using a reference model and scoreboard. A separate bug-detection testbench exercises a deliberately modified ALU implementation to demonstrate the ability of the verification environment to identify functional errors.
 
-## Table of Contents
-1. [Features](#features)
-2. [Repository Layout](#repository-layout)
-3. [Operations](#operations)
-4. [Flag Semantics](#flag-semantics)
-5. [Quick Start](#quick-start)
-6. [Verification Plan](#verification-plan)
-7. [Project Phases](#project-phases)
-8. [Troubleshooting](#troubleshooting)
-9. [Limitations](#limitations)
-10. [Roadmap](#roadmap)
-11. [Status](#status)
+## Key Features
 
----
+- **Self-checking verification:** Compares DUT outputs against expected results.
+- **Scoreboard-based checking:** Detects mismatches between expected and actual outputs.
+- **Functional coverage tracking:** Records opcode execution and selected result and flag conditions.
+- **Arithmetic corner-case testing:** Checks carry, overflow, borrow, and zero-result behavior.
+- **Invalid opcode testing:** Exercises unsupported opcode values.
+- **Bug-injection testing:** Uses a modified ALU implementation to evaluate whether the testbench detects injected functional errors.
+- **Automated simulation:** Shell scripts compile and run tests using Icarus Verilog.
+- **Saved verification evidence:** Simulation logs and result summaries are maintained in the repository.
 
-## Features
-- 32-bit combinational ALU with 10 defined operations (arithmetic, logic, shifts, comparisons)
-- Status flags: `zero`, `carry`, `overflow`
-- Icarus-compatible self-checking testbench with a PASS/FAIL summary line
-- One-command run script (`scripts/run.sh`)
-- Directory structure already reserved for UVM, assertions, and extra tests
-
-## Repository Layout
-
-| Path             | Purpose                                         | Phase    |
-|------------------|-------------------------------------------------|----------|
-| `rtl/alu.sv`     | ALU RTL                                         | Active   |
-| `tb/tb_alu.sv`   | Icarus-compatible self-checking testbench       | Active   |
-| `scripts/run.sh` | Compile and execute                             | Active   |
-| `uvm/`           | UVM environment (needs Questa/VCS/Xcelium)      | Reserved |
-| `assertions/`    | SVA properties / bind files                     | Reserved |
-| `tests/`         | Additional directed and regression tests        | Reserved |
+## Verification Architecture
 
 ```text
-rtl/
-  alu.sv
-tb/
-  tb_alu.sv
-scripts/
-  run.sh
-uvm/          # reserved
-assertions/   # reserved
-tests/        # reserved
+        SystemVerilog Testbench
+                  |
+          Stimulus Generation
+                  |
+                  v
+          ALU RTL (DUT)
+                  |
+                  v
+           Actual Outputs
+                  |
+                  v
+       Reference Model / Scoreboard
+                  |
+                  v
+       Checks + Coverage Counters
+                  |
+                  v
+         PASS / FAIL + Logs
 ```
 
-## Operations
-<<<<<<< HEAD
-=======
+A separate bug-detection flow runs the modified ALU against the verification testbench to check whether injected errors are detected.
 
-- `0`: ADD
-- `1`: SUB
-- `2`: AND
-- `3`: OR
-- `4`: XOR
-- `5`: SLL
-- `6`: SRL
-- `7`: SRA
-- `8`: SLT (signed)
-- `9`: SLTU (unsigned)
-- Other opcodes return zero.
->>>>>>> 7f20f60 (Update ALU verification documentation)
+## Repository Structure
 
-| Opcode | Mnemonic | Description                          |
-|:------:|----------|--------------------------------------|
-| `0`    | ADD      | Addition                             |
-| `1`    | SUB      | Subtraction                          |
-| `2`    | AND      | Bitwise AND                          |
-| `3`    | OR       | Bitwise OR                           |
-| `4`    | XOR      | Bitwise XOR                          |
-| `5`    | SLL      | Shift left logical                   |
-| `6`    | SRL      | Shift right logical                  |
-| `7`    | SRA      | Shift right arithmetic               |
-| `8`    | SLT      | Set if less than (signed)            |
-| `9`    | SLTU     | Set if less than (unsigned)          |
-| other  | n/a      | Returns zero                         |
-
-<<<<<<< HEAD
-> Port names, opcode width, and the shift-amount source (commonly `b[4:0]`) are not stated in the original README. Document them here after confirming against `rtl/alu.sv`.
-
-## Flag Semantics
-
-| Flag       | Meaning                                                                          |
-|------------|----------------------------------------------------------------------------------|
-| `zero`     | Result is zero                                                                   |
-| `carry`    | **ADD:** carry-out. **SUB:** `1` when there is no unsigned borrow. **Other ops:** cleared |
-| `overflow` | Signed overflow on ADD/SUB. **Other ops:** cleared                               |
-
-Per-operation behavior:
-
-| Operation        | `zero`        | `carry`   | `overflow`      |
-|------------------|---------------|-----------|-----------------|
-| ADD              | `result == 0` | carry-out | signed overflow |
-| SUB              | `result == 0` | no borrow | signed overflow |
-| Logic ops        | `result == 0` | 0         | 0               |
-| Shifts           | `result == 0` | 0         | 0               |
-| SLT / SLTU       | `result == 0` | 0         | 0               |
-| Undefined opcode | 1             | 0         | 0               |
-
-## Quick Start
-
-**Prerequisite:** Icarus Verilog with SystemVerilog support (`-g2012`).
-
-```bash
-# macOS (Homebrew)
-brew install icarus-verilog
+```text
+alu-functional-verification/
+├── rtl/
+│   ├── alu.sv
+│   └── alu_buggy.sv
+├── tb/
+│   ├── tb_alu.sv
+│   └── tb_bug_detection.sv
+├── tests/
+│   ├── tb_alu.sv
+│   └── tb_bug_detection.sv
+├── scripts/
+│   ├── run.sh
+│   └── run_bug_test.sh
+├── results/
+│   ├── README.md
+│   ├── alu_simulation.log
+│   └── bug_detection.log
+├── assertions/
+├── uvm/
+└── README.md
 ```
 
-**Run manually:**
-=======
-## Run on macOS
+The `tb/` directory contains the primary testbenches, while `tests/` contains the test files organized for the verification workflow. The `assertions/` and `uvm/` directories are reserved for further development unless additional implementations are added.
 
->>>>>>> 7f20f60 (Update ALU verification documentation)
+## Tools and Technologies
+
+| Tool / Technology           | Purpose                             |
+| --------------------------- | ----------------------------------- |
+| SystemVerilog               | RTL and testbench implementation    |
+| Icarus Verilog (`iverilog`) | Compilation and simulation          |
+| `vvp`                       | Simulation execution                |
+| Bash                        | Automated test execution            |
+| Git and GitHub              | Version control and project hosting |
+
+## How to Run
+
+### Prerequisites
+
+Install Icarus Verilog and ensure that both `iverilog` and `vvp` are available in your terminal.
+
+Verify the installation:
+
 ```bash
-iverilog -g2012 -s tb_alu -o /tmp/alu_sim rtl/alu.sv tb/tb_alu.sv
-vvp /tmp/alu_sim
+iverilog -V
+vvp -V
 ```
-<<<<<<< HEAD
-=======
 
-Or run `./scripts/run.sh`.
->>>>>>> 7f20f60 (Update ALU verification documentation)
+### 1. Run the ALU functional regression
 
-**Or use the helper script:**
+From the repository root:
+
 ```bash
+chmod +x scripts/run.sh
 ./scripts/run.sh
 ```
 
-<<<<<<< HEAD
-**Expected final line:**
+The script compiles the design and testbench, executes the simulation, and reports verification results.
+
+A successful scoreboard run should end with:
+
 ```text
-PASS: all ALU tests passed
+PASS: ALU scoreboard verification passed
 ```
 
-If the final line is anything else, treat the run as a failure, even if the process exits cleanly.
+### 2. Run the bug-detection test
 
-## Verification Plan
+```bash
+chmod +x scripts/run_bug_test.sh
+./scripts/run_bug_test.sh
+```
 
-Corner cases worth covering:
+Inspect the output to confirm that the injected fault is detected. The exact expected message depends on the behavior implemented in the script and testbench.
 
-| Area        | Case                                                                         |
-|-------------|------------------------------------------------------------------------------|
-| ADD         | `0x7FFFFFFF + 1` (overflow), `0xFFFFFFFF + 1` (carry, zero result)           |
-| SUB         | `0x80000000 - 1` (overflow), `0 - 1` (borrow, carry = 0), `a - a` (carry = 1) |
-| Shifts      | Shift by 0, 1, 31; SRA vs SRL on a negative value                            |
-| SLT vs SLTU | `0xFFFFFFFF` vs `1` differs between signed and unsigned                      |
-| Logic       | All-zeros, all-ones, `0xAAAAAAAA`, `0x55555555`                              |
-| Flags       | Carry/overflow cleared on every non-ADD/SUB op                               |
-| Opcodes     | Every opcode above `9` returns zero with flags cleared                       |
+### 3. Inspect saved results
 
-## Project Phases
+```bash
+cat results/alu_simulation.log
+cat results/bug_detection.log
+```
 
-| Phase | Scope                                              | Location       | Tooling                     | State        |
-|:-----:|----------------------------------------------------|----------------|-----------------------------|--------------|
-| 1     | RTL + self-checking testbench                      | `rtl/`, `tb/`  | Icarus Verilog              | Active       |
-| 2     | Assertions on ALU behavior and flags               | `assertions/`  | Simulator with SVA support  | Reserved     |
-| 3     | Extended directed and regression tests             | `tests/`       | Icarus Verilog              | Reserved     |
-| 4     | Class-based UVM environment                        | `uvm/`         | Questa, VCS, or Xcelium     | Reserved     |
+These logs provide evidence of the recorded simulation outcomes.
 
-UVM progression: interface, then transaction/sequencer/driver/monitor, then scoreboard (reuse the testbench reference model), then constrained-random sequences and functional coverage.
+## Functional Coverage and Results
 
-## Troubleshooting
+The main ALU regression tracks opcode counts and selected result and arithmetic-flag conditions.
 
-| Symptom                                 | Likely cause / fix                                         |
-|-----------------------------------------|------------------------------------------------------------|
-| `iverilog: command not found`           | Install Icarus Verilog                                     |
-| Errors on `logic` / `always_comb`       | Missing `-g2012` flag                                      |
-| Top-level module not found              | Check `-s tb_alu` matches the testbench module name        |
-| `vvp` prints nothing                    | Confirm the testbench calls `$display` and reaches `$finish` |
-| `Permission denied` on script           | `chmod +x scripts/run.sh`                                  |
-| SV feature unsupported                  | Icarus supports a subset of SV; keep RTL/TB constructs simple |
+In the recorded scoreboard run:
 
-## Limitations
-- Combinational design only; no clocking or timing is verified.
-- Icarus Verilog cannot run class-based UVM, so `uvm/` is not runnable in this starter.
-- Only the 10 listed operations are defined; all other opcodes return zero.
-- Passing simulation shows the tested vectors pass; it does not prove correctness for all inputs.
+| Metric                       | Recorded count |
+| ---------------------------- | -------------: |
+| Total opcode observations    |          1,020 |
+| Zero-result observations     |            451 |
+| Non-zero-result observations |            569 |
+| ADD carry observations       |             35 |
+| ADD overflow observations    |             16 |
+| SUB borrow observations      |             32 |
+| SUB overflow observations    |             12 |
 
-## Roadmap
-- [ ] Populate `assertions/` with flag and opcode properties
-- [ ] Populate `tests/` with directed corner cases and a seeded random regression
-- [ ] Exhaustive check on a reduced-width parameterization (e.g. 8-bit)
-- [ ] Build the UVM environment in `uvm/` for Questa/VCS/Xcelium
-- [ ] Add functional coverage (opcodes, flags, operand sign combinations)
-- [ ] CI job running `./scripts/run.sh`
+The scoreboard reported:
 
-## Status
-Phase 1 is active: the RTL and self-checking testbench run under Icarus Verilog and should end with `PASS: all ALU tests passed`. `uvm/`, `assertions/`, and `tests/` are reserved for later phases.
-=======
-## Layout
+```text
+PASS: ALU scoreboard verification passed
+```
 
-- `rtl/alu.sv`: ALU RTL
-- `tb/tb_alu.sv`: Icarus-compatible self-checking testbench
-- `uvm/`, `assertions/`, `tests/`: reserved for next phases
-- `scripts/run.sh`: compile and execute
+The opcode counters include valid and invalid opcode values. The counts above represent observations from the recorded run, not percentages of exhaustive input-space coverage.
 
-## Verification Results
+See [`results/alu_simulation.log`](results/alu_simulation.log) for the recorded simulation output. The bug-detection outcome should be evaluated separately using [`results/bug_detection.log`](results/bug_detection.log).
 
-### Test environment
+## Engineering Highlights
 
-- RTL and testbench: SystemVerilog
-- Simulator: Icarus Verilog
-- Regression command: `./scripts/run.sh`
-- Bug-injection command: `./scripts/run_bug_test.sh`
+- Developed a self-checking SystemVerilog testbench with reference-model comparison.
+- Used scoreboard checks to detect functional mismatches.
+- Tracked opcode execution and arithmetic status conditions.
+- Exercised invalid opcode inputs and arithmetic corner cases.
+- Created a separate bug-injection regression to evaluate fault detection.
+- Automated compilation and simulation through shell scripts.
+- Preserved test logs for repeatability and debugging.
 
-### Normal regression
+## Future Improvements
 
-- Transactions checked: 1,020
-- Scoreboard errors: 0
-- Valid ALU opcodes exercised: 10/10
-- Invalid opcodes exercised: 6/6
-- Result and arithmetic-flag checks included
+- Expand directed and constrained-random testing.
+- Add SystemVerilog Assertions (SVA) for important functional properties.
+- Integrate functional coverage into a more comprehensive coverage model.
+- Develop a reusable UVM environment with sequencer, driver, monitor, agent, and scoreboard components.
+- Add CI automation to execute regressions on every push.
+- Extend fault injection and measure detection effectiveness.
 
-### Bug-injection test
+## Conclusion
 
-An intentional XOR implementation defect was introduced in a separate ALU variant by replacing XOR with OR. The dedicated test detected the mismatch and passed the bug-detection check.
-
-### Key verification concepts demonstrated
-
-- Reference-model-based checking
-- Self-checking testbench and scoreboard
-- Directed and randomized stimulus
-- Opcode and result/flag coverage counters
-- Bug injection and regression automation
-
-### Limitations and future work
-
-This project currently uses a procedural SystemVerilog testbench. It is not yet a class-based UVM environment and does not currently report standards-based functional coverage percentages. Future work includes SystemVerilog assertions, improved constrained-random stimulus, and a UVM environment using a compatible simulator.
->>>>>>> 7f20f60 (Update ALU verification documentation)
+This project demonstrates practical RTL functional verification using SystemVerilog, self-checking testbenches, scoreboard-based checking, coverage counters, and simulation automation. It also explores verification quality through a separate bug-injection test flow and preserves simulation logs to make results inspectable and reproducible.
