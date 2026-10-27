@@ -1,0 +1,34 @@
+Starting ALU verification...
+
+========== VERIFICATION SUMMARY ==========
+Transactions checked: 1020
+Errors: 0
+
+========== OPCODE COVERAGE ===============
+Opcode 0: 63 hits
+Opcode 1: 60 hits
+Opcode 2: 64 hits
+Opcode 3: 63 hits
+Opcode 4: 63 hits
+Opcode 5: 64 hits
+Opcode 6: 65 hits
+Opcode 7: 51 hits
+Opcode 8: 69 hits
+Opcode 9: 81 hits
+Invalid opcode a: 64 hits
+Invalid opcode b: 68 hits
+Invalid opcode c: 54 hits
+Invalid opcode d: 61 hits
+Invalid opcode e: 56 hits
+Invalid opcode f: 74 hits
+
+========== RESULT/FLAG COVERAGE ==========
+Zero results: 451
+Non-zero results: 569
+ADD carry cases: 35
+ADD overflow cases: 16
+SUB borrow cases: 32
+SUB overflow cases: 12
+==========================================
+PASS: ALU scoreboard verification passed
+tb/tb_alu.sv:231: $finish called at 1020000 (1ps)

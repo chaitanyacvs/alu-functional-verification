@@ -1,0 +1,9 @@
+====================================
+ ALU BUG-INJECTION REGRESSION TEST
+====================================
+EXPECTED BUG DETECTED
+Expected XOR result: 0000000f
+Buggy ALU result:    000000ff
+PASS: bug detection test behaved as expected
+tb/tb_bug_detection.sv:49: $finish called at 1000 (1ps)
+REGRESSION PASS: injected bug was detected.
