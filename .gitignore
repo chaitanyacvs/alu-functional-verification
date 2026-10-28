@@ -4,3 +4,6 @@ simv
 simv.*
 reports/*.log
 .DS_Store
+
+# Verilator generated build files
+obj_dir/
