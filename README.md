@@ -1,53 +1,64 @@
 # ALU Functional Verification using SystemVerilog
 
-A simulation-driven RTL verification project for an Arithmetic Logic Unit (ALU), built using SystemVerilog and Icarus Verilog. The project focuses on functional correctness, self-checking testbenches, coverage tracking, bug detection, and reproducible simulation results.
+![Language](https://img.shields.io/badge/Language-SystemVerilog-blue)
+![Simulation](https://img.shields.io/badge/Simulation-Icarus%20Verilog-orange)
+![Verification](https://img.shields.io/badge/Verification-Assertions%20%7C%20UVM-purple)
+
+A hardware verification project focused on validating an Arithmetic Logic Unit (ALU) using SystemVerilog, simulation-based testing, assertions, scoreboard checking, functional coverage, and bug-injection testing.
 
 ## Overview
 
-This repository contains an ALU RTL implementation and a verification environment designed to check its behavior across supported operations, arithmetic corner cases, status flags, and invalid opcodes.
+This project provides a verification environment for an ALU implementation. It checks supported operations, arithmetic corner cases, status flags, and invalid opcodes.
 
-The testbench compares the DUT output against expected behavior using a reference model and scoreboard. A separate bug-detection testbench exercises a deliberately modified ALU implementation to demonstrate the ability of the verification environment to identify functional errors.
+The environment includes self-checking testbenches, a reference model and scoreboard, assertion-related files, a separate bug-detection flow, and a UVM component structure for further development.
+
+The goal is to improve confidence in RTL functionality through reproducible tests, automated execution, and inspectable verification results.
 
 ## Key Features
 
-- **Self-checking verification:** Compares DUT outputs against expected results.
-- **Scoreboard-based checking:** Detects mismatches between expected and actual outputs.
+- **Self-checking verification:** Compares actual ALU outputs with expected results.
+- **Reference model and scoreboard:** Detects functional mismatches.
+- **Assertion-based verification:** Uses SystemVerilog assertion-related source files to check design properties.
 - **Functional coverage tracking:** Records opcode execution and selected result and flag conditions.
-- **Arithmetic corner-case testing:** Checks carry, overflow, borrow, and zero-result behavior.
-- **Invalid opcode testing:** Exercises unsupported opcode values.
-- **Bug-injection testing:** Uses a modified ALU implementation to evaluate whether the testbench detects injected functional errors.
-- **Automated simulation:** Shell scripts compile and run tests using Icarus Verilog.
-- **Saved verification evidence:** Simulation logs and result summaries are maintained in the repository.
+- **Arithmetic corner cases:** Exercises carry, overflow, borrow, and zero-result behavior.
+- **Invalid opcode testing:** Tests unsupported opcode values.
+- **Bug-injection testing:** Evaluates whether the testbench detects an intentionally introduced functional error.
+- **UVM components:** Includes driver, monitor, sequence, sequencer, transaction, environment, and scoreboard-related files.
+- **Simulation automation:** Uses shell scripts to compile and run tests.
+- **Result preservation:** Organizes simulation logs and reports.
 
 ## Verification Architecture
 
 ```text
-        SystemVerilog Testbench
-                  |
-          Stimulus Generation
-                  |
-                  v
-          ALU RTL (DUT)
-                  |
-                  v
-           Actual Outputs
-                  |
-                  v
-       Reference Model / Scoreboard
-                  |
-                  v
-       Checks + Coverage Counters
-                  |
-                  v
-         PASS / FAIL + Logs
+              SystemVerilog Testbench
+                        |
+                Stimulus Generation
+                        |
+                        v
+                    ALU DUT
+                        |
+                        v
+                  Actual Outputs
+                        |
+                        v
+              Reference Model / Scoreboard
+                        |
+                        v
+               Comparison and Assertions
+                        |
+                        v
+                Coverage and Results
+                        |
+                        v
+                   PASS / FAIL
 ```
 
-A separate bug-detection flow runs the modified ALU against the verification testbench to check whether injected errors are detected.
+A separate bug-injection flow evaluates the ability of the verification environment to detect functional errors.
 
 ## Repository Structure
 
 ```text
-alu-functional-verification/
+uvm-alu-verification/
 ├── rtl/
 │   ├── alu.sv
 │   └── alu_buggy.sv
@@ -57,83 +68,124 @@ alu-functional-verification/
 ├── tests/
 │   ├── tb_alu.sv
 │   └── tb_bug_detection.sv
+├── assertions/
+│   ├── alu_assertions.sv
+│   └── tb_alu_sva.sv
+├── uvm/
+│   ├── agent/
+│   ├── env/
+│   ├── sequences/
+│   ├── tests/
+│   ├── alu_driver.sv
+│   ├── alu_if.sv
+│   ├── alu_monitor.sv
+│   ├── alu_scoreboard.sv
+│   ├── alu_sequence.sv
+│   ├── alu_sequencer.sv
+│   └── alu_transaction.sv
 ├── scripts/
 │   ├── run.sh
 │   └── run_bug_test.sh
+├── reports/
+│   └── last_run.log
 ├── results/
 │   ├── README.md
 │   ├── alu_simulation.log
+│   ├── alu_sva.log
 │   └── bug_detection.log
-├── assertions/
-├── uvm/
 └── README.md
 ```
 
-The `tb/` directory contains the primary testbenches, while `tests/` contains the test files organized for the verification workflow. The `assertions/` and `uvm/` directories are reserved for further development unless additional implementations are added.
+_The tree summarizes the structure shown in the repository. Confirm exact filenames and directory contents before relying on this list; the `agent/`, `env/`, `sequences/`, and `tests/` subdirectories may contain additional files._
 
 ## Tools and Technologies
 
-| Tool / Technology           | Purpose                             |
-| --------------------------- | ----------------------------------- |
-| SystemVerilog               | RTL and testbench implementation    |
-| Icarus Verilog (`iverilog`) | Compilation and simulation          |
-| `vvp`                       | Simulation execution                |
-| Bash                        | Automated test execution            |
-| Git and GitHub              | Version control and project hosting |
+| Tool                           | Purpose                                               |
+| ------------------------------ | ----------------------------------------------------- |
+| SystemVerilog                  | RTL and verification development                      |
+| Icarus Verilog                 | Compilation and simulation                            |
+| VVP                            | Execution of compiled simulations                     |
+| SystemVerilog Assertions (SVA) | Checking specified design properties                  |
+| UVM                            | Reusable, transaction-based verification architecture |
+| Bash                           | Regression automation                                 |
+| Git and GitHub                 | Version control and project hosting                   |
 
-## How to Run
+## Getting Started
 
 ### Prerequisites
 
-Install Icarus Verilog and ensure that both `iverilog` and `vvp` are available in your terminal.
-
-Verify the installation:
+Install Icarus Verilog and ensure `iverilog` and `vvp` are available.
 
 ```bash
 iverilog -V
 vvp -V
 ```
 
-### 1. Run the ALU functional regression
+### Clone the Repository
 
-From the repository root:
+```bash
+git clone <your-repository-url>
+cd uvm-alu-verification
+```
+
+Replace `<your-repository-url>` with the actual GitHub URL.
+
+## Running Simulation Tests
+
+Run the primary ALU simulation regression:
 
 ```bash
 chmod +x scripts/run.sh
 ./scripts/run.sh
 ```
 
-The script compiles the design and testbench, executes the simulation, and reports verification results.
+The script should compile the configured RTL and testbench files, execute the simulation, and report the test outcome.
 
-A successful scoreboard run should end with:
+## Running Bug-Detection Tests
 
-```text
-PASS: ALU scoreboard verification passed
-```
-
-### 2. Run the bug-detection test
+Run the separate bug-injection flow:
 
 ```bash
 chmod +x scripts/run_bug_test.sh
 ./scripts/run_bug_test.sh
 ```
 
-Inspect the output to confirm that the injected fault is detected. The exact expected message depends on the behavior implemented in the script and testbench.
+Review the output to determine whether the injected fault was detected. A valid bug-detection result should demonstrate that the testbench identifies the intended error, rather than merely reporting a compilation or runtime failure.
 
-### 3. Inspect saved results
+## Inspecting Assertion and Simulation Results
+
+The repository includes the following result files, as shown in the project structure:
 
 ```bash
 cat results/alu_simulation.log
+cat results/alu_sva.log
 cat results/bug_detection.log
 ```
 
-These logs provide evidence of the recorded simulation outcomes.
+These files can be used to inspect the recorded simulation, assertion, and bug-detection outcomes. Confirm their contents before reporting a passing result.
 
-## Functional Coverage and Results
+## Assertion-Based Verification
 
-The main ALU regression tracks opcode counts and selected result and arithmetic-flag conditions.
+The `assertions/` directory contains assertion-related source files.
 
-In the recorded scoreboard run:
+Assertions can check properties such as:
+
+- Correct ALU output for supported operations.
+- Expected status-flag behavior.
+- Consistency between inputs, opcode, and outputs.
+- Defined behavior for invalid opcodes.
+
+The actual properties and their pass/fail status depend on the assertions implemented and the simulation or formal flow used to evaluate them.
+
+## UVM Verification Environment
+
+The `uvm/` directory contains components associated with a transaction-based verification environment, including a driver, monitor, sequencer, sequence, transaction, interface, and scoreboard.
+
+These components provide a foundation for a reusable UVM testbench. UVM execution requires a compatible SystemVerilog simulator and an appropriate UVM library and test configuration. Icarus Verilog alone should not be assumed to support the complete UVM environment.
+
+## Functional Coverage and Recorded Results
+
+The supplied project description reports the following observations from a recorded scoreboard run:
 
 | Metric                       | Recorded count |
 | ---------------------------- | -------------: |
@@ -145,35 +197,35 @@ In the recorded scoreboard run:
 | SUB borrow observations      |             32 |
 | SUB overflow observations    |             12 |
 
-The scoreboard reported:
+The recorded scoreboard message was:
 
 ```text
 PASS: ALU scoreboard verification passed
 ```
 
-The opcode counters include valid and invalid opcode values. The counts above represent observations from the recorded run, not percentages of exhaustive input-space coverage.
+These values are observations from the supplied run, not proof of exhaustive input coverage. Re-run the regression and check the current logs before treating these numbers as the latest results.
 
-See [`results/alu_simulation.log`](results/alu_simulation.log) for the recorded simulation output. The bug-detection outcome should be evaluated separately using [`results/bug_detection.log`](results/bug_detection.log).
+Evaluate the bug-detection outcome and assertion results independently from the main scoreboard regression.
 
-## Engineering Highlights
+## Engineering Practices
 
-- Developed a self-checking SystemVerilog testbench with reference-model comparison.
-- Used scoreboard checks to detect functional mismatches.
-- Tracked opcode execution and arithmetic status conditions.
-- Exercised invalid opcode inputs and arithmetic corner cases.
-- Created a separate bug-injection regression to evaluate fault detection.
-- Automated compilation and simulation through shell scripts.
-- Preserved test logs for repeatability and debugging.
+- Keep RTL, testbenches, assertions, and UVM components organized separately.
+- Automate repeatable verification runs.
+- Preserve logs that support reported outcomes.
+- Add regression tests when bugs are discovered.
+- Document unsupported behaviors and verification limitations.
+- Distinguish simulation success from formal proof and UVM execution.
 
 ## Future Improvements
 
 - Expand directed and constrained-random testing.
-- Add SystemVerilog Assertions (SVA) for important functional properties.
-- Integrate functional coverage into a more comprehensive coverage model.
-- Develop a reusable UVM environment with sequencer, driver, monitor, agent, and scoreboard components.
-- Add CI automation to execute regressions on every push.
-- Extend fault injection and measure detection effectiveness.
+- Add assertions for additional functional properties.
+- Improve coverage tracking and coverage closure.
+- Complete and run the UVM environment using a compatible simulator.
+- Add continuous integration for automated regression testing.
+- Expand fault injection and measure fault-detection effectiveness.
+- Archive simulation and assertion reports for reproducibility.
 
 ## Conclusion
 
-This project demonstrates practical RTL functional verification using SystemVerilog, self-checking testbenches, scoreboard-based checking, coverage counters, and simulation automation. It also explores verification quality through a separate bug-injection test flow and preserves simulation logs to make results inspectable and reproducible.
+This project demonstrates practical ALU verification using SystemVerilog, self-checking testbenches, scoreboard-based checking, assertions, and simulation automation. Its bug-injection flow provides an additional way to evaluate verification effectiveness, while the UVM structure supports further development toward reusable, transaction-based
